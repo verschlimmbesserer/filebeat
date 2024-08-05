@@ -1,0 +1,31 @@
+---
+
+- name: "Add repo key"
+  ansible.builtin.apt_key:
+    url: "{{ filebeat_repo_key }}"
+    state: present
+  when: ansible_os_family == 'Debian'
+
+- name: "Add elastic repo"
+  ansible.builtin.apt_repository:
+    filename: elastic
+    repo: "{{ filebeat_repo }}"
+    update_cache: true
+    state: present
+  when: ansible_os_family == 'Debian'
+
+- name: "Install filebeat"
+  ansible.builtin.apt:
+    name: filebeat
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+  when: ansible_os_family == 'Debian'
+
+- name: Deploy filebeat config
+  ansible.builtin.template:
+    src: filebeat.yml.j2
+    dest: /etc/filebeat/filebeat.yml
+    owner: root
+    group: root
+    mode: "0644"
